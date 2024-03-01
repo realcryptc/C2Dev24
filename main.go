@@ -9,5 +9,8 @@ func main() {
 	}
 
 	// start listening for requests
-	listener.Listen()
+	go listener.Listen()
+
+	// start our CLI
+	c2.StartCLI()
 }
