@@ -2,7 +2,7 @@
 
 ## Course Setup
 For getting setup with code and such you should do the following
-1. Fork this [repo](https://github.com/realcryptc/C2Dev24)
+1. Fork this [repo](https://github.com/coremedic/C2Dev24)
 2. Clone your newly created repo onto your device
 3. Install [Golang](https://go.dev/doc/install)
 4. Install [VSCode](https://code.visualstudio.com/download)  or even better [GoLand](https://www.jetbrains.com/help/go/installation-guide.html)
