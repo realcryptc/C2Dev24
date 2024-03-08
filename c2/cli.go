@@ -8,6 +8,7 @@ import (
 	"os/exec"
 	"runtime"
 	"strings"
+	"time"
 )
 
 var helpMenu string = `
@@ -20,6 +21,7 @@ _-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-
 help				Show this menu		 
 clear				Clear the console	 
 exit				Clean Exit of C2	 
+agents				List all the agents
 history				See what you did fool
 _-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-
 
@@ -62,6 +64,7 @@ func StartCLI() {
 		readline.PcItem("clear"),
 		readline.PcItem("help"),
 		readline.PcItem("exit"),
+		readline.PcItem("agents"),
 		readline.PcItem("history"),
 	)
 
@@ -109,6 +112,13 @@ func StartCLI() {
 			{
 				if err := clearConsole(); err != nil {
 					fmt.Println(err)
+				}
+			}
+		case "agents":
+			{
+				fmt.Printf("%10s %10s %10s\n", "ID", "IP", "Last Call")
+				for _, agent := range AgentMap.Agents {
+					fmt.Printf("%10s %10s %5.0f seconds ago\n", agent.ID, agent.IP, time.Since(agent.LastCall).Seconds())
 				}
 			}
 		case "history":
