@@ -100,16 +100,16 @@ func StartCLI() {
 
 		command = strings.TrimSpace(command)
 		if CurrentAgent != nil {
-			rl.SetPrompt(fmt.Sprintf("[C2 %s] > ", CurrentAgent.ID))
+			rl.SetPrompt(fmt.Sprintf("C2 %s > ", CurrentAgent.ID))
 		} else {
-			rl.SetPrompt("[CS} > ")
+			rl.SetPrompt("C2 > ")
 		}
 
 		switch {
 		case command == "exit":
 			{
 				// do a thing
-				fmt.Println("[C2] Shutting down C2, gooodbye world...")
+				fmt.Println("C2 Shutting down C2, gooodbye world...")
 				os.Exit(0)
 			}
 		case command == "help":
@@ -134,23 +134,22 @@ func StartCLI() {
 				// print everything from history file
 				readHistoryFile()
 			}
-		case strings.HasPrefix(command, "agent "):
+		case strings.HasPrefix(command, "agent"):
 			{
 				agentId := strings.TrimPrefix(command, "agent ")
 				if agent := AgentMap.Get(agentId); agent != nil {
 					CurrentAgent = agent
 					// TODO: Log Agent call backs to file -- new file -- read since last login
-					rl.SetPrompt(fmt.Sprintf("[C2 %s] > ", CurrentAgent.ID))
+					rl.SetPrompt(fmt.Sprintf("C2 %s > ", CurrentAgent.ID))
 				} else {
-					fmt.Printf("Agent %s does not exist", agentId)
+					fmt.Printf("KYS -- Agent %s does not exist\n", agentId)
 				}
 			}
-		case strings.HasPrefix(command, "exec "):
+		case strings.HasPrefix(command, "exec"):
 			{
 				if CurrentAgent == nil {
 					// TODO add log entry
-					fmt.Println("KYS")
-					fmt.Println("Seriously though...no agent selected, run agent command to specify one")
+					fmt.Println("No agent selected!")
 					continue
 				}
 
